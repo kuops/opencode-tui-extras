@@ -10,7 +10,7 @@
 
 ## 功能
 
-- 显示最近一次助手调用的 token 总量
+- 显示最近一条规范化 Token 总量大于零的助手消息，并遵循 OpenCode v2 的压缩和 revert 边界
 - 分别显示输入、缓存命中、缓存未命中和缓存写入用量
 - 分别显示输出、思考和响应内容用量
 - 显示缓存命中率和彩色分布条
@@ -26,9 +26,11 @@
 
 ## 安装
 
+支持的最低版本为 OpenCode v2.0.16；维护模式下的 OpenCode v1 最低支持 v1.18.0。
+
 ### OpenCode v2
 
-OpenCode v2 是主要支持目标。在全局 `~/.config/opencode/cli.json` 中添加插件，并禁用内置 Context 侧边栏：
+OpenCode v2 是主要支持目标。在全局 CLI 配置中添加插件并禁用内置 Context 侧边栏：设置了 `XDG_CONFIG_HOME` 时使用 `$XDG_CONFIG_HOME/opencode/cli.json`，否则使用 `~/.config/opencode/cli.json`。
 
 ```json
 {
@@ -43,7 +45,7 @@ OpenCode v2 是主要支持目标。在全局 `~/.config/opencode/cli.json` 中�
 
 ### OpenCode v1 兼容
 
-现有 v1 适配器和安装方式继续保留，但 v1 仅提供维护性兼容，不再开发新功能。使用 OpenCode v1 安装此包后，在 `~/.config/opencode/tui.json` 或 `.opencode/tui.json` 中禁用内置 Context 面板：
+现有 v1 适配器和安装方式继续保留，但 v1 仅提供维护性兼容，不再开发新功能。使用 OpenCode v1 安装此包后，在 `XDG_CONFIG_HOME` 已设置时使用 `$XDG_CONFIG_HOME/opencode/tui.json`，否则使用 `~/.config/opencode/tui.json`；也可在项目级 `.opencode/tui.json` 中禁用内置 Context 面板：
 
 ```json
 {
@@ -63,10 +65,10 @@ OpenCode v2 是主要支持目标。在全局 `~/.config/opencode/cli.json` 中�
 
 | 选项 | 默认值 | 行为 |
 | --- | --- | --- |
-| `transparent` | `false` | 将当前主题背景透明化，并跟随主题及浅色/深色模式切换 |
+| `transparent` | `false` | 在模态弹窗之外清除部分当前主题背景色，并跟随主题及浅色/深色模式切换 |
 | `mcp` | `false` | 添加自定义 MCP 状态侧边栏；需要禁用内置 MCP Sidebar 以免重复 |
 
-在 `~/.config/opencode/cli.json` 中使用对象形式启用选项。以下示例同时启用两项：
+在同一个全局 CLI 配置中使用对象形式启用选项。以下示例同时启用两项：
 
 ```json
 {
@@ -86,19 +88,19 @@ OpenCode v2 是主要支持目标。在全局 `~/.config/opencode/cli.json` 中�
 
 ### Context 交互
 
-点击 `Context` 标题可折叠或展开明细。折叠标题会显示当前上下文窗口使用百分比；没有用量时显示 `0.0%`。百分比颜色与展开面板使用相同阈值：低于 80% 为绿色，80% 至 89% 为黄色，90% 及以上为红色。
+点击 `Context` 标题可折叠或展开明细。折叠标题会显示计算出的上下文窗口使用百分比。当没有符合条件的 Token 用量，或所选消息没有有效的正数上下文上限时，显示 `0.0%`。低于 80% 为绿色，80%（含）至 90%（不含）为黄色，90% 及以上为红色。
 
 在 OpenCode v2 中，插件会选择最近一次已完成压缩之后、包含 Token 用量的最新助手消息，并遵循当前 revert 边界。
 
 ### MCP 行为
 
-可选的 MCP Sidebar 只修改侧边栏呈现：`Connected` 文本使用与状态小点相同的主题 success 颜色。服务器超过两个时，点击 `MCP` 标题可折叠或展开列表；折叠标题会汇总 active 和 error 数量。
+可选的 MCP Sidebar 只修改侧边栏呈现：`Connected` 文本使用与状态小点相同的主题 success 颜色。服务器超过两个时，点击 `MCP` 标题可折叠或展开列表；折叠标题会汇总 connected 和 issue 数量。issue 数量包含连接失败以及需要认证的服务器。
 
-点击服务器会打开 OpenCode 原生 `mcp.list` 对话框，并定位到被点击的服务器。连接、断开、重连、认证和错误详情——包括 Space 键操作和实时状态更新——均继续由 OpenCode 原版管理。
+点击服务器会调用 OpenCode 原生 `mcp.list` 命令。原生选择命令可用时，插件会将对话框选中项移动到被点击的服务器；不可用时则保留原生默认选中项。连接、断开、重试、认证、错误详情、原生 Space 键操作和实时状态更新均继续由 OpenCode 管理。
 
 ### 透明模式
 
-透明模式应搭配原始主题使用（例如使用 `one-dark`，而不是透明主题副本）。启用后，插件会将主界面、Sidebar、输入框和工具区域背景透明化，同时保留当前主题的文字和 Accent 标签，并移除输入框的不透明阴影。主题或浅色/深色模式切换后会自动同步。打开菜单或模态弹窗时，界面会暂时恢复主题原本的不透明背景；关闭后自动恢复透明效果。
+透明模式应搭配原始主题使用（例如使用 `one-dark`，而不是透明主题副本）。在模态弹窗之外，插件会清除与部分基础及凸起背景色匹配的单元格，通常会使主界面、Sidebar、输入框和工具区域透明，同时保持前景色不变。插件也会移除与输入框阴影颜色匹配的连续长条，并自动跟随主题及浅色/深色模式切换。打开模态弹窗时，界面会暂时使用主题原本的不透明背景；关闭后自动恢复透明效果。
 
 ## 工作原理
 
@@ -107,7 +109,7 @@ OpenCode v2 是主要支持目标。在全局 `~/.config/opencode/cli.json` 中�
 ```text
 模型提供商响应
   -> OpenCode 标准化 Token 用量
-  -> 插件读取最近一条助手消息
+  -> 插件选择最近一条符合条件的助手消息
   -> 侧边栏计算并显示用量明细
 ```
 
@@ -125,12 +127,15 @@ OpenCode v2 是主要支持目标。在全局 `~/.config/opencode/cli.json` 中�
 Input         = Cache miss + Cache hit + Cache write
 Output        = Response + Thinking
 Total         = Input + Output
+Cache hit rate = Cache hit / Input * 100%（Input 为零时取 0%）
 Context usage = Total / 模型上下文上限 * 100%
 ```
 
-上下文上限来自当前模型的元数据。费用直接使用 OpenCode 累计的 `session.cost`，不同提供商的 Token 价格仍由 OpenCode 处理。缺失或无效的数据会显示为零，不会出现 `NaN`。由于数据来自当前会话状态，每次产生新的助手消息后，侧边栏都会随之更新。
+缓存分布条按 Cache hit、Cache write 和 Cache miss 的比例划分 `Input`。上下文上限根据所选助手消息中记录的提供商和模型查找，而不是使用输入框当前选择的模型。费用直接使用 OpenCode 累计的 `session.cost`，不同提供商的 Token 价格仍由 OpenCode 处理。缺失或无效的数据会显示为零，不会出现 `NaN`。由于数据来自当前会话状态，每次产生新的助手消息后，侧边栏都会随之更新。
 
-## 开发
+## 从源码开发
+
+克隆仓库后安装依赖并构建。发布到 npm 的包只包含生成的 `dist` 文件，不包含源码和构建脚本。
 
 ```bash
 npm install
@@ -154,7 +159,7 @@ npm run build
 }
 ```
 
-如需测试 OpenCode v1 兼容性：
+如需测试 OpenCode v1 兼容性，请先构建项目，再在 `tui.json` 中指向仓库根目录：
 
 ```json
 {
