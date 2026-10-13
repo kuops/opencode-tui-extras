@@ -1,11 +1,15 @@
 {
   "name": "opencode-context-sidebar",
-  "version": "1.0.0",
-  "description": "Provider-agnostic context usage sidebar for OpenCode TUI",
+  "version": "1.1.0",
+  "description": "Provider-agnostic context and MCP sidebars for OpenCode TUI",
   "type": "module",
   "main": "./dist/server.js",
   "types": "./dist/server.d.ts",
   "exports": {
+    ".": {
+      "import": "./dist/server.js",
+      "types": "./dist/server.d.ts"
+    },
     "./server": {
       "import": "./dist/server.js",
       "types": "./dist/server.d.ts"
@@ -19,19 +23,31 @@
     }
   },
   "scripts": {
-    "build": "tsc && node build.tui.mjs",
+    "build": "node clean.mjs && tsc && node build.tui.mjs",
+    "test": "npm run build && node --test test/*.test.mjs",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
+    "@opencode/plugin": ">=2.0.16",
     "@opencode-ai/plugin": ">=1.18.0",
     "@opentui/core": ">=0.4.0",
     "@opentui/solid": ">=0.4.0",
     "solid-js": ">=1.9.0"
   },
+  "peerDependenciesMeta": {
+    "@opencode/plugin": {
+      "optional": true
+    },
+    "@opencode-ai/plugin": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@opencode/plugin": "^2.0.16",
     "@opencode-ai/plugin": "latest",
-    "@opentui/core": "0.5.1",
-    "@opentui/solid": "0.5.1",
+    "@opencode/theme": "^2.0.16",
+    "@opentui/core": "0.5.17",
+    "@opentui/solid": "0.5.17",
     "@types/node": "^25.6.0",
     "esbuild": "^0.25.12",
     "esbuild-plugin-solid": "^0.5.0",
@@ -49,9 +65,11 @@
     "tui",
     "context",
     "tokens",
-    "cache"
+    "cache",
+    "mcp"
   ],
   "files": [
-    "dist"
+    "dist",
+    "images"
   ]
 }

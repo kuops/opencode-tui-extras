@@ -8,6 +8,6 @@ await esbuild.build({
   platform: "node",
   bundle: true,
   logOverride: { "package.json": "silent" },
-  external: ["@opencode-ai/*", "@opentui/*", "solid-js"],
+  external: ["@opencode-ai/*", "@opencode/*", "@opentui/*", "solid-js"],
   plugins: [solidPlugin({ solid: { moduleName: "@opentui/solid", generate: "universal" } })],
 });
