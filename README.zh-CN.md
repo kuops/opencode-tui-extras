@@ -2,7 +2,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-面向 OpenCode v2、不依赖特定提供商的上下文用量侧边栏，并提供可选的透明模式和 MCP 状态样式。现有 OpenCode v1 适配器仅作为维护模式兼容层保留。
+面向 OpenCode v2、不依赖特定提供商的上下文用量侧边栏，并提供可选的 Skills 管理、透明模式和 MCP 状态样式。现有 OpenCode v1 适配器仅作为维护模式兼容层保留。
 
 <p align="center">
   <img src="images/opencode-context-sidebar.png" alt="上下文用量侧边栏预览" width="600">
@@ -21,12 +21,15 @@
 - 以 OpenCode v2 为主要目标，同时保留维护模式的 OpenCode v1 兼容
 - 可选透明模式，自动跟随当前主题及浅色/深色模式
 - 可选 MCP Sidebar：`Connected` 显示为绿色，管理弹窗仍使用 OpenCode 原版
+- 可选 Skills Sidebar 和可搜索管理弹窗，按项目持久保存启用/禁用状态
+- 可选的主题自适应 Powerline 样式，用于现有输入框和 Sidebar 底栏
+- 可选在工作目录菜单中增加 `Open in VS Code`
 
 只要提供商通过 OpenCode 标准字段报告 token 用量，此插件即可正常工作。
 
 ## 安装
 
-支持的最低版本为 OpenCode v2.0.16；维护模式下的 OpenCode v1 最低支持 v1.18.0。
+支持的最低版本为 OpenCode v2.0.26；维护模式下的 OpenCode v1 最低支持 v1.18.0。
 
 ### OpenCode v2
 
@@ -65,10 +68,13 @@ OpenCode v2 是主要支持目标。在全局 CLI 配置中添加插件并禁用
 
 | 选项 | 默认值 | 行为 |
 | --- | --- | --- |
-| `transparent` | `false` | 在模态弹窗之外清除部分当前主题背景色，并跟随主题及浅色/深色模式切换 |
+| `transparent` | `false` | 清除部分当前主题背景色，使模态弹窗周围透明暗化，并跟随主题及浅色/深色模式切换 |
 | `mcp` | `false` | 添加自定义 MCP 状态侧边栏；需要禁用内置 MCP Sidebar 以免重复 |
+| `skills` | `false` | 添加紧凑的 Skills Sidebar 和 `/skills-settings` 管理弹窗；Server 插件按项目保存禁用 ID |
+| `powerline` | `false` | 为现有输入框和 Sidebar 底栏应用跟随主题的 Powerline 配色及分隔符 |
+| `vscode` | `false` | 点击输入框或 Sidebar 路径时，在工作目录菜单中增加 `Open in VS Code` |
 
-在同一个全局 CLI 配置中使用对象形式启用选项。以下示例同时启用两项：
+在同一个全局 CLI 配置中使用对象形式启用仅 TUI 功能。以下示例同时启用四项 TUI 增强：
 
 ```json
 {
@@ -79,12 +85,35 @@ OpenCode v2 是主要支持目标。在全局 CLI 配置中添加插件并禁用
       "package": "opencode-context-sidebar",
       "options": {
         "transparent": true,
-        "mcp": true
+        "mcp": true,
+        "powerline": true,
+        "vscode": true
       }
     }
   ]
 }
 ```
+
+Skills 管理会修改 Server 端的 Skill catalog，因此必须在两处加载：保留上面 `cli.json` 中的 TUI 配置，并在全局或项目级 `opencode.json(c)` 中加入同一个包及 `skills: true`：
+
+```jsonc
+{
+  "plugins": [
+    {
+      "package": "opencode-context-sidebar",
+      "options": {
+        "transparent": true,
+        "mcp": true,
+        "skills": true,
+        "powerline": true,
+        "vscode": true
+      }
+    }
+  ]
+}
+```
+
+连接远程 Server 时，需要在远端安装并配置 Server 插件，同时在本地客户端保留 CLI/TUI 插件配置。禁用的 Skill 状态由 Server 保存；是否折叠 Skills 区域等显示状态仅保存在客户端。同时加载两个入口是有意设计：Server 负责过滤 catalog 和提供 RPC，TUI 负责 Sidebar 和 Dialog。
 
 ### Context 交互
 
@@ -98,9 +127,39 @@ OpenCode v2 是主要支持目标。在全局 CLI 配置中添加插件并禁用
 
 点击服务器会调用 OpenCode 原生 `mcp.list` 命令。原生选择命令可用时，插件会将对话框选中项移动到被点击的服务器；不可用时则保留原生默认选中项。连接、断开、重试、认证、错误详情、原生 Space 键操作和实时状态更新均继续由 OpenCode 管理。
 
+### Skills 管理
+
+可选的 Skills Sidebar 与原生 MCP Sidebar 行为一致：展开时显示全部 Skills，折叠时显示状态汇总。点击某一行或运行 `/skills-settings` 可打开搜索管理弹窗；选中项目即可在启用与禁用之间切换。`Manual` 表示该 Skill 设置了 `autoinvoke: false`：仍可手动调用，但不会自动展示给模型。
+
+禁用的 Skill ID 由 Server 插件按 OpenCode 项目保存，重启 Server 或 TUI 后仍然有效。插件只从 OpenCode Skill registry 中过滤对应项目，不会修改或移动原始 `SKILL.md`；重新启用时会恢复底层 Skill。状态变化后，TUI 会刷新 OpenCode 原生 Skill 缓存，因此运行中的客户端会立即更新 `/skills` 和 `@skill` 补全。
+
+OpenCode 分两个阶段提供 Skill。激活之前，模型只能看到已启用且允许自动调用的 Skill 的 `id`、`name` 和 `description`；已启用的 `Manual` Skill 仍可通过 `/skills` 或 `@skill` 显式选择。在现有 Session 中启用 Skill，会从下一次模型请求开始恢复可用，但启用操作本身不会注入指令。只有模型调用 Skill 工具或用户显式附加 Skill 时，OpenCode 才会把 `SKILL.md` 的 Markdown 正文展开为 `<skill_content>`，并将这段文本保存到 Session。Skill 目录中的其他文件内容不会自动上传；OpenCode 只会附带抽样后的文件路径列表，供后续按需读取。
+
+这个开关控制的是后续加载，不会修改已经物化的历史内容：
+
+| 场景 | 行为 |
+| --- | --- |
+| 当前 Session 尚未加载 Skill 时禁用 | 立即生效；后续请求无法再自动或显式加载 |
+| 当前 Session 已加载 Skill 后禁用 | 阻止后续加载，但此前注入的文本仍保留在该 Session 历史中 |
+| 断开后重新打开同一个 Session | 恢复同一份持久化历史，包括此前注入的 Skill 文本 |
+| Skill 禁用时新建 Session | 新 Session 不包含该 Skill，也无法加载它 |
+| 在现有 Session 中启用 | 下一次请求即可发现；只有随后真正调用 Skill 时才会注入完整正文 |
+
+修改状态无法改变已经在执行中的模型请求。上下文压缩也不能保证卸载：Skill 文本可能原样保留在近期窗口中，也可能进入生成的摘要。当前 OpenCode API 尚不支持 Session 级 Skill 卸载，因此如需确保上下文中完全不存在此前加载的 Skill 文本，应新建 Session。
+
 ### 透明模式
 
-透明模式应搭配原始主题使用（例如使用 `one-dark`，而不是透明主题副本）。在模态弹窗之外，插件会清除与部分基础及凸起背景色匹配的单元格，通常会使主界面、Sidebar、输入框和工具区域透明，同时保持前景色不变。插件也会移除与输入框阴影颜色匹配的连续长条，并自动跟随主题及浅色/深色模式切换。打开模态弹窗时，界面会暂时使用主题原本的不透明背景；关闭后自动恢复透明效果。
+透明模式应搭配原始主题使用（例如使用 `one-dark`，而不是透明主题副本）。插件会清除部分基础及凸起背景色，通常会使主界面、Sidebar、输入框和工具区域透明。当前景色相对终端检测到的背景仍然清晰时会保持不变；低对比度文字会向终端前景色调整。插件也会移除与输入框阴影颜色匹配的连续长条，并自动跟随主题及浅色/深色模式切换。打开模态弹窗时，只有弹窗面板保留主题的不透明表面，周围界面在同一渲染帧中保持透明并暗化。底层图片以及能够安全识别的原生边框和输入框阴影会暂时隐藏；CJK 文字、Emoji 等 tagged OpenTUI 字形始终保留。
+
+### Powerline 模式
+
+Powerline 模式保留 OpenCode 现有的底栏内容、布局、响应式行为和点击操作，只为已渲染的输入框底栏及 Sidebar 路径应用主题衍生的前景色、背景色和 Powerline 分隔符。路径、活动状态、Context、费用和命令提示会自动跟随主题及浅色/深色模式切换。Context 继续使用与 Context 面板一致的绿色、黄色和红色阈值。
+
+如果 `` 或 `` 显示异常，请为终端配置兼容 Powerline 的字体或 Nerd Font。打开模态弹窗时会暂停 Powerline 着色，使弹窗与底层界面保持清晰区隔。
+
+### VS Code 操作
+
+启用 `vscode` 后，点击工作目录路径会打开增强后的原生菜单，其中新增 `Open in VS Code`。该操作执行 `code --reuse-window <目录>`，因此运行 OpenCode TUI 的环境需要能够找到 `code` 命令。复制路径、系统文件管理器和 Workspaces 操作仍然保留。
 
 ## 工作原理
 
@@ -142,7 +201,7 @@ npm install
 npm run build
 ```
 
-使用 OpenCode v2 本地加载时，先构建项目，再在 `~/.config/opencode/cli.json` 中指向生成的 `dist` 目录。仅在启用 `mcp` 选项时添加 `-opencode.sidebar.mcp`：
+使用 OpenCode v2 仅加载 TUI 功能时，先构建项目，再在 `~/.config/opencode/cli.json` 中指向生成的 `dist` 目录。仅在启用 `mcp` 选项时添加 `-opencode.sidebar.mcp`：
 
 ```json
 {
@@ -152,8 +211,23 @@ npm run build
       "package": "file:///absolute/path/to/opencode-context-sidebar/dist",
       "options": {
         "transparent": true,
-        "mcp": false
+        "mcp": false,
+        "powerline": true,
+        "vscode": true
       }
+    }
+  ]
+}
+```
+
+如需从源码测试 Skills 管理，应在 `cli.json` 中保留上面的 `dist` 目录，同时也从 Server 配置加载它：
+
+```jsonc
+{
+  "plugins": [
+    {
+      "package": "file:///absolute/path/to/opencode-context-sidebar/dist",
+      "options": { "skills": true }
     }
   ]
 }

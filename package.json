@@ -1,7 +1,7 @@
 {
   "name": "opencode-context-sidebar",
   "version": "1.1.0",
-  "description": "Provider-agnostic context and MCP sidebars for OpenCode TUI",
+  "description": "Provider-agnostic Context, Skills, and MCP sidebars for OpenCode TUI",
   "type": "module",
   "main": "./dist/server.js",
   "types": "./dist/server.d.ts",
@@ -27,8 +27,11 @@
     "test": "npm run build && node --test test/*.test.mjs",
     "prepublishOnly": "npm run build"
   },
+  "dependencies": {
+    "open": "11.0.4"
+  },
   "peerDependencies": {
-    "@opencode/plugin": ">=2.0.16",
+    "@opencode/plugin": ">=2.0.26",
     "@opencode-ai/plugin": ">=1.18.0",
     "@opentui/core": ">=0.4.0",
     "@opentui/solid": ">=0.4.0",
@@ -43,7 +46,7 @@
     }
   },
   "devDependencies": {
-    "@opencode/plugin": "^2.0.16",
+    "@opencode/plugin": "^2.0.26",
     "@opencode-ai/plugin": "latest",
     "@opencode/theme": "^2.0.16",
     "@opentui/core": "0.5.17",
@@ -66,7 +69,9 @@
     "context",
     "tokens",
     "cache",
-    "mcp"
+    "mcp",
+    "powerline",
+    "skills"
   ],
   "files": [
     "dist",

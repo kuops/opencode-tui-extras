@@ -5,6 +5,14 @@ import { ContextUsage, type ThemePalette } from "./tui-shared.js";
 import { installTransparency } from "./transparency.js";
 import { latestV2UsageIndex } from "./usage.js";
 import { McpSidebar } from "./mcp-sidebar.js";
+import { installPowerline } from "./powerline.js";
+import { installWorkingDirectoryMenu } from "./working-directory.js";
+import {
+  currentSkillsLocation,
+  installNativeSkillCatalogRefresh,
+  openSkillsManager,
+  SkillsSidebar,
+} from "./skills-sidebar.js";
 
 function V2ContextUsage(props: { context: Context; sessionID: string }) {
   const messages = createMemo(() => props.context.data.session.message.list(props.sessionID));
@@ -64,10 +72,45 @@ export function setupV2(context: Context) {
         render: (props) => <McpSidebar context={context} sessionID={props.sessionID} />,
       })
     : undefined;
+  const disposeSkills = context.options.skills === true
+    ? context.ui.slot({
+        append: "sidebar.content",
+        render: (props) => <SkillsSidebar context={context} sessionID={props.sessionID} />,
+      })
+    : undefined;
+  const disposeSkillCatalogRefresh = context.options.skills === true
+    ? installNativeSkillCatalogRefresh(context)
+    : undefined;
+  if (context.options.skills === true) {
+    context.keymap.layer(() => ({
+      mode: "global",
+      commands: [
+        {
+          id: "opencode-context-sidebar.skills.manage",
+          title: "Skills: Manage",
+          description: "Enable or disable Skills for the current project",
+          group: "Skills",
+          palette: true,
+          slash: { name: "skills-settings" },
+          run: () => openSkillsManager(context, currentSkillsLocation(context)),
+        },
+      ],
+    }));
+  }
+  const disposePowerline = context.options.powerline === true
+    ? installPowerline(context)
+    : undefined;
+  const disposeWorkingDirectory = context.options.vscode === true
+    ? installWorkingDirectoryMenu(context)
+    : undefined;
 
   return () => {
+    disposeWorkingDirectory?.();
+    disposePowerline?.();
     disposeTransparency?.();
     disposeSlot();
+    disposeSkillCatalogRefresh?.();
+    disposeSkills?.();
     disposeMcp?.();
   };
 }
