@@ -1,7 +1,7 @@
 {
-  "name": "opencode-context-sidebar",
+  "name": "opencode-tui-extras",
   "version": "1.1.0",
-  "description": "Provider-agnostic Context, Skills, and MCP sidebars for OpenCode TUI",
+  "description": "Context, Skills, and MCP sidebars, transparent UI, and Powerline-style status bars for OpenCode v2",
   "type": "module",
   "main": "./dist/server.js",
   "types": "./dist/server.d.ts",
@@ -32,7 +32,6 @@
   },
   "peerDependencies": {
     "@opencode/plugin": ">=2.0.26",
-    "@opencode-ai/plugin": ">=1.18.0",
     "@opentui/core": ">=0.4.0",
     "@opentui/solid": ">=0.4.0",
     "solid-js": ">=1.9.0"
@@ -40,14 +39,10 @@
   "peerDependenciesMeta": {
     "@opencode/plugin": {
       "optional": true
-    },
-    "@opencode-ai/plugin": {
-      "optional": true
     }
   },
   "devDependencies": {
     "@opencode/plugin": "^2.0.26",
-    "@opencode-ai/plugin": "latest",
     "@opencode/theme": "^2.0.16",
     "@opentui/core": "0.5.17",
     "@opentui/solid": "0.5.17",
@@ -60,7 +55,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/kuops/opencode-context-sidebar.git"
+    "url": "git+ssh://git@github.com/kuops/opencode-tui-extras.git"
+  },
+  "homepage": "https://github.com/kuops/opencode-tui-extras#readme",
+  "bugs": {
+    "url": "https://github.com/kuops/opencode-tui-extras/issues"
   },
   "keywords": [
     "opencode",

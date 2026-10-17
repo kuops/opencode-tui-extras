@@ -1,16 +1,14 @@
-import type { TuiPluginModule } from "@opencode-ai/plugin/tui";
 import type { Context } from "@opencode/plugin/tui/plugin";
-import { tuiV1 } from "./tui-v1.js";
 import { setupV2 } from "./tui-v2.js";
 export { mcpStatusLabel } from "./mcp-sidebar.js";
 export { skillStatusLabel } from "./skills-model.js";
 
-const plugin: TuiPluginModule & {
+const plugin: {
   id: string;
   setup: (context: Context) => ReturnType<typeof setupV2>;
 } = {
+  // Keep the original ID so persisted TUI state survives the package rename.
   id: "opencode-context-sidebar-tui",
-  tui: tuiV1,
   setup: setupV2,
 };
 

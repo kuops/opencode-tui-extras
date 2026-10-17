@@ -78,7 +78,7 @@ export async function installSkillsServer(context: Context) {
         await ensureFilter();
       }
     } catch (error) {
-      if (!events.signal.aborted) console.warn("[opencode-context-sidebar] Skills listener stopped:", error);
+      if (!events.signal.aborted) console.warn("[opencode-tui-extras] Skills listener stopped:", error);
     }
   })();
 

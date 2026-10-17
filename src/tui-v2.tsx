@@ -7,6 +7,7 @@ import { latestV2UsageIndex } from "./usage.js";
 import { McpSidebar } from "./mcp-sidebar.js";
 import { installPowerline } from "./powerline.js";
 import { installWorkingDirectoryMenu } from "./working-directory.js";
+import { installSidebarScrollbar } from "./sidebar-scrollbar.js";
 import {
   currentSkillsLocation,
   installNativeSkillCatalogRefresh,
@@ -59,10 +60,15 @@ function V2ContextUsage(props: { context: Context; sessionID: string }) {
 }
 
 export function setupV2(context: Context) {
-  const disposeSlot = context.ui.slot({
-    prepend: "sidebar.content",
-    render: (props) => <V2ContextUsage context={context} sessionID={props.sessionID} />,
-  });
+  const disposeContext = context.options.context !== false
+    ? context.ui.slot({
+        prepend: "sidebar.content",
+        render: (props) => <V2ContextUsage context={context} sessionID={props.sessionID} />,
+      })
+    : undefined;
+  const disposeSidebarScrollbar = context.options.sidebarScrollbar === false
+    ? installSidebarScrollbar(context)
+    : undefined;
   const disposeTransparency = context.options.transparent === true
     ? installTransparency(context)
     : undefined;
@@ -105,10 +111,11 @@ export function setupV2(context: Context) {
     : undefined;
 
   return () => {
+    disposeSidebarScrollbar?.();
     disposeWorkingDirectory?.();
     disposePowerline?.();
     disposeTransparency?.();
-    disposeSlot();
+    disposeContext?.();
     disposeSkillCatalogRefresh?.();
     disposeSkills?.();
     disposeMcp?.();

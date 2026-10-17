@@ -1,16 +1,20 @@
-# opencode-context-sidebar
+# opencode-tui-extras
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-面向 OpenCode v2、不依赖特定提供商的上下文用量侧边栏，并提供可选的 Skills 管理、透明模式和 MCP 状态样式。现有 OpenCode v1 适配器仅作为维护模式兼容层保留。
+面向 OpenCode v2 的 TUI 增强插件，提供 Context、Skills 和 MCP 侧边栏、透明界面、Powerline 风格的输入框与侧边栏状态栏，以及 Open in VS Code 操作。
 
 <p align="center">
-  <img src="images/opencode-context-sidebar.png" alt="上下文用量侧边栏预览" width="600">
+  <img src="images/opencode-tui-extras.png" alt="OpenCode TUI Extras 侧边栏预览" width="600">
 </p>
 
 ## 功能
 
-- 显示最近一条规范化 Token 总量大于零的助手消息，并遵循 OpenCode v2 的压缩和 revert 边界
+- 集成于 OpenCode v2 TUI 的 Context、Skills 和 MCP 侧边栏
+- 可选透明界面，自动跟随当前主题及浅色/深色模式
+- 可选的主题自适应 Powerline 风格输入框和侧边栏状态栏
+- 可选在工作目录菜单中增加 `Open in VS Code`
+- 显示最近一条规范化 Token 总量大于零的助手消息，并遵循压缩和 revert 边界
 - 分别显示输入、缓存命中、缓存未命中和缓存写入用量
 - 分别显示输出、思考和响应内容用量
 - 显示缓存命中率和彩色分布条
@@ -18,63 +22,47 @@
 - 显示会话累计费用，与 OpenCode 内置 Context 面板的行为一致
 - Context 明细可折叠，折叠标题显示当前使用百分比
 - 分隔线宽度随侧边栏可用宽度动态调整
-- 以 OpenCode v2 为主要目标，同时保留维护模式的 OpenCode v1 兼容
-- 可选透明模式，自动跟随当前主题及浅色/深色模式
-- 可选 MCP Sidebar：`Connected` 显示为绿色，管理弹窗仍使用 OpenCode 原版
-- 可选 Skills Sidebar 和可搜索管理弹窗，按项目持久保存启用/禁用状态
-- 可选的主题自适应 Powerline 样式，用于现有输入框和 Sidebar 底栏
-- 可选在工作目录菜单中增加 `Open in VS Code`
+- MCP 的 `Connected` 状态显示为绿色，管理弹窗仍使用 OpenCode 原版
+- 可搜索的 Skills 管理弹窗，按项目持久保存启用/禁用状态
 
 只要提供商通过 OpenCode 标准字段报告 token 用量，此插件即可正常工作。
 
 ## 安装
 
-支持的最低版本为 OpenCode v2.0.26；维护模式下的 OpenCode v1 最低支持 v1.18.0。
+要求 OpenCode v2.0.26 或更高版本。
 
-### OpenCode v2
-
-OpenCode v2 是主要支持目标。在全局 CLI 配置中添加插件并禁用内置 Context 侧边栏：设置了 `XDG_CONFIG_HOME` 时使用 `$XDG_CONFIG_HOME/opencode/cli.json`，否则使用 `~/.config/opencode/cli.json`。
+在全局 CLI 配置中添加插件并禁用内置 Context 侧边栏：设置了 `XDG_CONFIG_HOME` 时使用 `$XDG_CONFIG_HOME/opencode/cli.json`，否则使用 `~/.config/opencode/cli.json`。
 
 ```json
 {
   "plugins": [
     "-opencode.sidebar.context",
-    "opencode-context-sidebar"
+    "opencode-tui-extras"
   ]
 }
 ```
 
 修改配置后重启 OpenCode。
 
-### OpenCode v1 兼容
+### 从 opencode-context-sidebar 迁移
 
-现有 v1 适配器和安装方式继续保留，但 v1 仅提供维护性兼容，不再开发新功能。使用 OpenCode v1 安装此包后，在 `XDG_CONFIG_HOME` 已设置时使用 `$XDG_CONFIG_HOME/opencode/tui.json`，否则使用 `~/.config/opencode/tui.json`；也可在项目级 `.opencode/tui.json` 中禁用内置 Context 面板：
+将 OpenCode 配置中的 `opencode-context-sidebar` 替换为 `opencode-tui-extras`。旧 npm 包仍可供现有安装使用，但不再维护。
 
-```json
-{
-  "$schema": "https://opencode.ai/tui.json",
-  "plugin": ["opencode-context-sidebar"],
-  "plugin_enabled": {
-    "internal:sidebar-context": false
-  }
-}
-```
+## 选项
 
-修改配置后重启 OpenCode。此包仍同时导出两个适配器，已有 v1 安装可以继续使用。
-
-## OpenCode v2 选项
-
-以下选项默认均为关闭，仅适用于 OpenCode v2；维护模式的 v1 适配器不会加入这些功能。
+Context 区域和 Sidebar 滚动条默认显示，其余可选增强默认关闭。
 
 | 选项 | 默认值 | 行为 |
 | --- | --- | --- |
+| `context` | `true` | 显示 Context 用量区域；设为 `false` 时不加载该区域 |
+| `sidebarScrollbar` | `true` | 显示右侧 Sidebar 的垂直滚动条；设为 `false` 时隐藏滚动条，但保留鼠标滚轮、触控板和键盘滚动 |
 | `transparent` | `false` | 清除部分当前主题背景色，使模态弹窗周围透明暗化，并跟随主题及浅色/深色模式切换 |
 | `mcp` | `false` | 添加自定义 MCP 状态侧边栏；需要禁用内置 MCP Sidebar 以免重复 |
 | `skills` | `false` | 添加紧凑的 Skills Sidebar 和 `/skills-settings` 管理弹窗；Server 插件按项目保存禁用 ID |
-| `powerline` | `false` | 为现有输入框和 Sidebar 底栏应用跟随主题的 Powerline 配色及分隔符 |
+| `powerline` | `false` | 为输入框和 Sidebar 状态栏应用跟随主题的 Powerline 配色及分隔符 |
 | `vscode` | `false` | 点击输入框或 Sidebar 路径时，在工作目录菜单中增加 `Open in VS Code` |
 
-在同一个全局 CLI 配置中使用对象形式启用仅 TUI 功能。以下示例同时启用四项 TUI 增强：
+在同一个全局 CLI 配置中使用对象形式设置选项。以下示例保留 Context、隐藏 Sidebar 滚动条，并同时启用全部五项可选 TUI 增强：
 
 ```json
 {
@@ -82,10 +70,13 @@ OpenCode v2 是主要支持目标。在全局 CLI 配置中添加插件并禁用
     "-opencode.sidebar.context",
     "-opencode.sidebar.mcp",
     {
-      "package": "opencode-context-sidebar",
+      "package": "opencode-tui-extras",
       "options": {
+        "context": true,
+        "sidebarScrollbar": false,
         "transparent": true,
         "mcp": true,
+        "skills": true,
         "powerline": true,
         "vscode": true
       }
@@ -94,19 +85,17 @@ OpenCode v2 是主要支持目标。在全局 CLI 配置中添加插件并禁用
 }
 ```
 
+`context` 和 `sidebarScrollbar` 是相互独立且仅作用于 CLI/TUI 的选项。例如，两者同时设为 `false` 时，Context 区域不会加载，Sidebar 滚动条仍会隐藏。不要把这两个选项写入 `opencode.json(c)` 的 Server 插件配置。
+
 Skills 管理会修改 Server 端的 Skill catalog，因此必须在两处加载：保留上面 `cli.json` 中的 TUI 配置，并在全局或项目级 `opencode.json(c)` 中加入同一个包及 `skills: true`：
 
 ```jsonc
 {
   "plugins": [
     {
-      "package": "opencode-context-sidebar",
+      "package": "opencode-tui-extras",
       "options": {
-        "transparent": true,
-        "mcp": true,
-        "skills": true,
-        "powerline": true,
-        "vscode": true
+        "skills": true
       }
     }
   ]
@@ -119,7 +108,7 @@ Skills 管理会修改 Server 端的 Skill catalog，因此必须在两处加载
 
 点击 `Context` 标题可折叠或展开明细。折叠标题会显示计算出的上下文窗口使用百分比。当没有符合条件的 Token 用量，或所选消息没有有效的正数上下文上限时，显示 `0.0%`。低于 80% 为绿色，80%（含）至 90%（不含）为黄色，90% 及以上为红色。
 
-在 OpenCode v2 中，插件会选择最近一次已完成压缩之后、包含 Token 用量的最新助手消息，并遵循当前 revert 边界。
+插件会选择最近一次已完成压缩之后、包含 Token 用量的最新助手消息，并遵循当前 revert 边界。
 
 ### MCP 行为
 
@@ -153,7 +142,7 @@ OpenCode 分两个阶段提供 Skill。激活之前，模型只能看到已启�
 
 ### Powerline 模式
 
-Powerline 模式保留 OpenCode 现有的底栏内容、布局、响应式行为和点击操作，只为已渲染的输入框底栏及 Sidebar 路径应用主题衍生的前景色、背景色和 Powerline 分隔符。路径、活动状态、Context、费用和命令提示会自动跟随主题及浅色/深色模式切换。Context 继续使用与 Context 面板一致的绿色、黄色和红色阈值。
+Powerline 模式保留 OpenCode 现有状态栏的内容、布局、响应式行为和点击操作，只为输入框和 Sidebar 状态栏应用主题衍生的前景色、背景色和 Powerline 分隔符。路径、活动状态、Context、费用和命令提示会自动跟随主题及浅色/深色模式切换。Context 继续使用与 Context 面板一致的绿色、黄色和红色阈值。
 
 如果 `` 或 `` 显示异常，请为终端配置兼容 Powerline 的字体或 Nerd Font。打开模态弹窗时会暂停 Powerline 着色，使弹窗与底层界面保持清晰区隔。
 
@@ -201,15 +190,17 @@ npm install
 npm run build
 ```
 
-使用 OpenCode v2 仅加载 TUI 功能时，先构建项目，再在 `~/.config/opencode/cli.json` 中指向生成的 `dist` 目录。仅在启用 `mcp` 选项时添加 `-opencode.sidebar.mcp`：
+仅加载本地 TUI 功能时，先构建项目，再在 `~/.config/opencode/cli.json` 中指向生成的 `dist` 目录。仅在启用 `mcp` 选项时添加 `-opencode.sidebar.mcp`：
 
 ```json
 {
   "plugins": [
     "-opencode.sidebar.context",
     {
-      "package": "file:///absolute/path/to/opencode-context-sidebar/dist",
+      "package": "file:///absolute/path/to/opencode-tui-extras/dist",
       "options": {
+        "context": true,
+        "sidebarScrollbar": false,
         "transparent": true,
         "mcp": false,
         "powerline": true,
@@ -226,22 +217,10 @@ npm run build
 {
   "plugins": [
     {
-      "package": "file:///absolute/path/to/opencode-context-sidebar/dist",
+      "package": "file:///absolute/path/to/opencode-tui-extras/dist",
       "options": { "skills": true }
     }
   ]
-}
-```
-
-如需测试 OpenCode v1 兼容性，请先构建项目，再在 `tui.json` 中指向仓库根目录：
-
-```json
-{
-  "$schema": "https://opencode.ai/tui.json",
-  "plugin": ["file:///absolute/path/to/opencode-context-sidebar"],
-  "plugin_enabled": {
-    "internal:sidebar-context": false
-  }
 }
 ```
 

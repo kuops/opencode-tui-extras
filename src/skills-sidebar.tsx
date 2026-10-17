@@ -81,7 +81,7 @@ export function installNativeSkillCatalogRefresh(context: Context) {
     // reloads currently emit a locationless event, which that cache ignores.
     if (event.location) return;
     void syncNativeSkillCatalog(context, currentSkillsLocation(context)).catch((error) => {
-      console.warn("[opencode-context-sidebar] Failed to refresh native Skill catalog:", error);
+      console.warn("[opencode-tui-extras] Failed to refresh native Skill catalog:", error);
     });
   });
 }
