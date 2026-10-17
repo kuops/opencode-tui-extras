@@ -27,7 +27,7 @@ const managedSkillsSchema = {
 } as const;
 
 export const SkillsRpc = Rpc.define({
-  id: "opencode-context-sidebar.skills",
+  id: "opencode-tui-extras.skills",
   methods: {
     list: {
       input: {

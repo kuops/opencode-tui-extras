@@ -31,38 +31,9 @@
 
 要求 OpenCode v2.0.26 或更高版本。
 
-在全局 CLI 配置中添加插件并禁用内置 Context 侧边栏：设置了 `XDG_CONFIG_HOME` 时使用 `$XDG_CONFIG_HOME/opencode/cli.json`，否则使用 `~/.config/opencode/cli.json`。
+### CLI/TUI（`cli.json`）
 
-```json
-{
-  "plugins": [
-    "-opencode.sidebar.context",
-    "opencode-tui-extras"
-  ]
-}
-```
-
-修改配置后重启 OpenCode。
-
-### 从 opencode-context-sidebar 迁移
-
-将 OpenCode 配置中的 `opencode-context-sidebar` 替换为 `opencode-tui-extras`。旧 npm 包仍可供现有安装使用，但不再维护。
-
-## 选项
-
-Context 区域和 Sidebar 滚动条默认显示，其余可选增强默认关闭。
-
-| 选项 | 默认值 | 行为 |
-| --- | --- | --- |
-| `context` | `true` | 显示 Context 用量区域；设为 `false` 时不加载该区域 |
-| `sidebarScrollbar` | `true` | 显示右侧 Sidebar 的垂直滚动条；设为 `false` 时隐藏滚动条，但保留鼠标滚轮、触控板和键盘滚动 |
-| `transparent` | `false` | 清除部分当前主题背景色，使模态弹窗周围透明暗化，并跟随主题及浅色/深色模式切换 |
-| `mcp` | `false` | 添加自定义 MCP 状态侧边栏；需要禁用内置 MCP Sidebar 以免重复 |
-| `skills` | `false` | 添加紧凑的 Skills Sidebar 和 `/skills-settings` 管理弹窗；Server 插件按项目保存禁用 ID |
-| `powerline` | `false` | 为输入框和 Sidebar 状态栏应用跟随主题的 Powerline 配色及分隔符 |
-| `vscode` | `false` | 点击输入框或 Sidebar 路径时，在工作目录菜单中增加 `Open in VS Code` |
-
-在同一个全局 CLI 配置中使用对象形式设置选项。以下示例保留 Context、隐藏 Sidebar 滚动条，并同时启用全部五项可选 TUI 增强：
+在全局 CLI 配置中添加 TUI 插件：设置了 `XDG_CONFIG_HOME` 时使用 `$XDG_CONFIG_HOME/opencode/cli.json`，否则使用 `~/.config/opencode/cli.json`。
 
 ```json
 {
@@ -85,9 +56,13 @@ Context 区域和 Sidebar 滚动条默认显示，其余可选增强默认关闭
 }
 ```
 
-`context` 和 `sidebarScrollbar` 是相互独立且仅作用于 CLI/TUI 的选项。例如，两者同时设为 `false` 时，Context 区域不会加载，Sidebar 滚动条仍会隐藏。不要把这两个选项写入 `opencode.json(c)` 的 Server 插件配置。
+示例启用了自定义 Context 和 MCP Sidebar，因此前两项使用 `-` 禁用 OpenCode 内置版本。当 `context` 为 `false` 时无需添加 `-opencode.sidebar.context`；当 `mcp` 为 `false` 时无需添加 `-opencode.sidebar.mcp`。
 
-Skills 管理会修改 Server 端的 Skill catalog，因此必须在两处加载：保留上面 `cli.json` 中的 TUI 配置，并在全局或项目级 `opencode.json(c)` 中加入同一个包及 `skills: true`：
+`context` 和 `sidebarScrollbar` 是相互独立且仅作用于 CLI/TUI 的选项。两者同时设为 `false` 时，自定义 Context 区域不会加载，右侧 Sidebar 滚动条仍会隐藏。
+
+### Skills Server（`opencode.json(c)`）
+
+在 `cli.json` 中启用 `skills` 时，还需要在 Server 配置中加载同一个包并设置 `skills: true`。可以写入全局 `~/.config/opencode/opencode.json(c)`，也可以写入项目级 `opencode.json(c)`：
 
 ```jsonc
 {
@@ -102,7 +77,23 @@ Skills 管理会修改 Server 端的 Skill catalog，因此必须在两处加载
 }
 ```
 
-连接远程 Server 时，需要在远端安装并配置 Server 插件，同时在本地客户端保留 CLI/TUI 插件配置。禁用的 Skill 状态由 Server 保存；是否折叠 Skills 区域等显示状态仅保存在客户端。同时加载两个入口是有意设计：Server 负责过滤 catalog 和提供 RPC，TUI 负责 Sidebar 和 Dialog。
+Server 负责过滤 Skill catalog、提供管理 RPC，并按项目保存禁用的 Skill ID；CLI/TUI 负责渲染 Sidebar 和 Dialog。连接远程 Server 时，应在远端配置 Server 插件，并在本地 `cli.json` 中保留 CLI/TUI 插件。
+
+修改任一配置文件后重启 OpenCode。
+
+## 选项
+
+Context 区域和 Sidebar 滚动条默认显示，其余可选增强默认关闭。
+
+| 选项 | 默认值 | 行为 |
+| --- | --- | --- |
+| `context` | `true` | 显示 Context 用量区域；设为 `false` 时不加载该区域 |
+| `sidebarScrollbar` | `true` | 显示右侧 Sidebar 的垂直滚动条；设为 `false` 时隐藏滚动条，但保留鼠标滚轮、触控板和键盘滚动 |
+| `transparent` | `false` | 清除部分当前主题背景色，使模态弹窗周围透明暗化，并跟随主题及浅色/深色模式切换 |
+| `mcp` | `false` | 添加自定义 MCP 状态侧边栏；需要禁用内置 MCP Sidebar 以免重复 |
+| `skills` | `false` | 添加紧凑的 Skills Sidebar 和 `/skills-settings` 管理弹窗；Server 插件按项目保存禁用 ID |
+| `powerline` | `false` | 为输入框和 Sidebar 状态栏应用跟随主题的 Powerline 配色及分隔符 |
+| `vscode` | `false` | 点击输入框或 Sidebar 路径时，在工作目录菜单中增加 `Open in VS Code` |
 
 ### Context 交互
 

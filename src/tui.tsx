@@ -7,8 +7,7 @@ const plugin: {
   id: string;
   setup: (context: Context) => ReturnType<typeof setupV2>;
 } = {
-  // Keep the original ID so persisted TUI state survives the package rename.
-  id: "opencode-context-sidebar-tui",
+  id: "opencode-tui-extras-tui",
   setup: setupV2,
 };
 

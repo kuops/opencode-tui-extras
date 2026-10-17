@@ -64,7 +64,7 @@ test("registers the Skills sidebar, manager, and native cache refresh only when 
   assert.equal(enabled.layers.length, 1);
   assert.equal(enabled.listeners.length, 1);
   assert.equal(enabled.listeners[0].type, "skill.updated");
-  assert.equal(enabled.layers[0].commands[0].id, "opencode-context-sidebar.skills.manage");
+  assert.equal(enabled.layers[0].commands[0].id, "opencode-tui-extras.skills.manage");
   assert.equal(enabled.layers[0].commands[0].slash.name, "skills-settings");
 
   enabled.listeners[0].handler({ type: "skill.updated", data: {} });

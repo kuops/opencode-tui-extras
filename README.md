@@ -31,38 +31,9 @@ The plugin works with any provider that reports standard OpenCode token usage fi
 
 OpenCode v2.0.26 or newer is required.
 
-Add the plugin to the global CLI config—`$XDG_CONFIG_HOME/opencode/cli.json` when `XDG_CONFIG_HOME` is set, otherwise `~/.config/opencode/cli.json`—and disable the built-in Context sidebar:
+### CLI/TUI (`cli.json`)
 
-```json
-{
-  "plugins": [
-    "-opencode.sidebar.context",
-    "opencode-tui-extras"
-  ]
-}
-```
-
-Restart OpenCode after changing the configuration.
-
-### Migrating from opencode-context-sidebar
-
-Replace `opencode-context-sidebar` with `opencode-tui-extras` in your OpenCode configuration. The old npm package remains available for existing installations but is no longer maintained.
-
-## Options
-
-The Context section and Sidebar scrollbar are shown by default. Optional enhancements are disabled by default.
-
-| Option | Default | Behavior |
-| --- | --- | --- |
-| `context` | `true` | Shows the Context usage section; set to `false` to omit it |
-| `sidebarScrollbar` | `true` | Shows the right Sidebar's vertical scrollbar; set to `false` to hide it while preserving mouse, trackpad, and keyboard scrolling |
-| `transparent` | `false` | Clears selected active-theme backgrounds, keeps modal surroundings transparently dimmed, and follows theme and light/dark mode changes |
-| `mcp` | `false` | Adds the custom MCP status sidebar; disable the built-in MCP sidebar to avoid duplicates |
-| `skills` | `false` | Adds a compact Skills sidebar and `/skills-settings` manager; the server plugin stores per-project disabled IDs |
-| `powerline` | `false` | Applies theme-aware Powerline colors and separators to the prompt and sidebar status bars |
-| `vscode` | `false` | Adds `Open in VS Code` to the menu shown when the prompt or sidebar path is clicked |
-
-Configure these options with the object form in the same global CLI config. This example keeps Context visible, hides the Sidebar scrollbar, and enables all five optional TUI additions:
+Add the TUI plugin to the global CLI config at `$XDG_CONFIG_HOME/opencode/cli.json` when `XDG_CONFIG_HOME` is set, or `~/.config/opencode/cli.json` otherwise:
 
 ```json
 {
@@ -85,9 +56,13 @@ Configure these options with the object form in the same global CLI config. This
 }
 ```
 
-`context` and `sidebarScrollbar` are independent CLI/TUI options. For example, setting both to `false` omits the Context section and still hides the Sidebar scrollbar. They do not belong in the server plugin entry in `opencode.json(c)`.
+The two entries prefixed with `-` disable OpenCode's built-in Context and MCP sidebars because this example enables their replacements. Omit `-opencode.sidebar.context` when `context` is `false`, and omit `-opencode.sidebar.mcp` when `mcp` is `false`.
 
-Skills management also changes the server-side Skill catalog, so the package must be loaded in both places: keep the TUI entry above in `cli.json`, and add the same package with `skills: true` to the global or project `opencode.json(c)`:
+`context` and `sidebarScrollbar` are independent CLI/TUI options. Setting both to `false` omits the custom Context section and still hides the right Sidebar scrollbar.
+
+### Skills server (`opencode.json(c)`)
+
+When `skills` is enabled in `cli.json`, also load the server plugin with `skills: true`. Add it to the global `~/.config/opencode/opencode.json(c)` or a project-level `opencode.json(c)`:
 
 ```jsonc
 {
@@ -102,7 +77,23 @@ Skills management also changes the server-side Skill catalog, so the package mus
 }
 ```
 
-When connecting to a remote server, install and configure the server package there, and keep the CLI/TUI package configured on the client. The server owns disabled Skill state; the client only owns presentation state such as whether the Skills section is collapsed. Loading both entrypoints is intentional: the server filters the catalog and exposes RPC, while the TUI renders the Sidebar and Dialog.
+The Server filters the Skill catalog, exposes the management RPC, and stores disabled Skill IDs per project. The CLI/TUI renders the Sidebar and Dialog. When connecting to a remote Server, configure this Server plugin remotely and keep the CLI/TUI plugin in the local `cli.json`.
+
+Restart OpenCode after changing either configuration file.
+
+## Options
+
+The Context section and Sidebar scrollbar are shown by default. Optional enhancements are disabled by default.
+
+| Option | Default | Behavior |
+| --- | --- | --- |
+| `context` | `true` | Shows the Context usage section; set to `false` to omit it |
+| `sidebarScrollbar` | `true` | Shows the right Sidebar's vertical scrollbar; set to `false` to hide it while preserving mouse, trackpad, and keyboard scrolling |
+| `transparent` | `false` | Clears selected active-theme backgrounds, keeps modal surroundings transparently dimmed, and follows theme and light/dark mode changes |
+| `mcp` | `false` | Adds the custom MCP status sidebar; disable the built-in MCP sidebar to avoid duplicates |
+| `skills` | `false` | Adds a compact Skills sidebar and `/skills-settings` manager; the server plugin stores per-project disabled IDs |
+| `powerline` | `false` | Applies theme-aware Powerline colors and separators to the prompt and sidebar status bars |
+| `vscode` | `false` | Adds `Open in VS Code` to the menu shown when the prompt or sidebar path is clicked |
 
 ### Context interaction
 

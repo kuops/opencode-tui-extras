@@ -92,7 +92,7 @@ export function setupV2(context: Context) {
       mode: "global",
       commands: [
         {
-          id: "opencode-context-sidebar.skills.manage",
+          id: "opencode-tui-extras.skills.manage",
           title: "Skills: Manage",
           description: "Enable or disable Skills for the current project",
           group: "Skills",
